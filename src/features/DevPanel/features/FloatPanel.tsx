@@ -4,11 +4,16 @@ import { ActionIcon, FluentEmoji, Icon, SideNav } from '@lobehub/ui';
 import { FloatButton } from 'antd';
 import { createStyles } from 'antd-style';
 import { BugIcon, BugOff, XIcon } from 'lucide-react';
+import dynamic from 'next/dynamic';
 import { ReactNode, memo, useEffect, useState } from 'react';
 import { Flexbox } from 'react-layout-kit';
-import { Rnd } from 'react-rnd';
 
 import { BRANDING_NAME } from '@/const/branding';
+
+// 使用 dynamic import 并禁用 SSR
+const RndComponent = dynamic(() => import('react-rnd').then((mod) => mod.Rnd), { 
+  ssr: false 
+});
 
 // 定义样式
 const useStyles = createStyles(({ token, css, prefixCls }) => {
@@ -81,31 +86,39 @@ interface CollapsibleFloatPanelProps {
 const CollapsibleFloatPanel = memo<CollapsibleFloatPanelProps>(({ items }) => {
   const { styles, theme } = useStyles();
   const [tab, setTab] = useState<string>(items[0].key);
-
   const [isExpanded, setIsExpanded] = useState(false);
   const [position, setPosition] = useState({ x: 100, y: 100 });
   const [size, setSize] = useState({ height: minHeight, width: minWidth });
+  const [isMounted, setIsMounted] = useState(false);
 
+  // 只在客户端加载时执行
   useEffect(() => {
-    try {
-      const localStoragePosition = localStorage.getItem('debug-panel-position');
-      if (localStoragePosition && JSON.parse(localStoragePosition)) {
-        setPosition(JSON.parse(localStoragePosition));
+    setIsMounted(true);
+    
+    if (typeof window !== 'undefined') {
+      try {
+        const localStoragePosition = localStorage.getItem('debug-panel-position');
+        if (localStoragePosition) {
+          const parsed = JSON.parse(localStoragePosition);
+          if (parsed) setPosition(parsed);
+        }
+      } catch (error) {
+        console.error('Failed to load panel position', error);
       }
-    } catch {
-      /* empty */
-    }
 
-    try {
-      const localStorageSize = localStorage.getItem('debug-panel-size');
-      if (localStorageSize && JSON.parse(localStorageSize)) {
-        setSize(JSON.parse(localStorageSize));
+      try {
+        const localStorageSize = localStorage.getItem('debug-panel-size');
+        if (localStorageSize) {
+          const parsed = JSON.parse(localStorageSize);
+          if (parsed) setSize(parsed);
+        }
+      } catch (error) {
+        console.error('Failed to load panel size', error);
       }
-    } catch {
-      /* empty */
     }
   }, []);
 
+  // 如果在服务器端或未挂载，则不渲染 Rnd 组件
   return (
     <>
       <FloatButton
@@ -113,22 +126,30 @@ const CollapsibleFloatPanel = memo<CollapsibleFloatPanelProps>(({ items }) => {
         icon={<Icon icon={isExpanded ? BugOff : BugIcon} />}
         onClick={() => setIsExpanded(!isExpanded)}
       />
-      {isExpanded && (
-        <Rnd
+      {isExpanded && isMounted && (
+        <RndComponent
           bounds="window"
           className={`${styles.panel} ${isExpanded ? styles.expanded : styles.collapsed}`}
           dragHandleClassName="panel-drag-handle"
           minHeight={minHeight}
           minWidth={minWidth}
-          onDragStop={(e, d) => {
+          onDragStop={(_e, d) => {
             setPosition({ x: d.x, y: d.y });
+            try {
+              localStorage.setItem('debug-panel-position', JSON.stringify({ x: d.x, y: d.y }));
+            } catch {}
           }}
-          onResizeStop={(e, direction, ref, delta, position) => {
-            setSize({
-              height: Number(ref.style.height),
-              width: Number(ref.style.width),
-            });
+          onResizeStop={(_e, _direction, ref, _delta, position) => {
+            const newSize = {
+              height: parseInt(ref.style.height, 10),
+              width: parseInt(ref.style.width, 10),
+            };
+            setSize(newSize);
             setPosition(position);
+            try {
+              localStorage.setItem('debug-panel-size', JSON.stringify(newSize));
+              localStorage.setItem('debug-panel-position', JSON.stringify(position));
+            } catch {}
           }}
           position={position}
           size={size}
@@ -191,7 +212,7 @@ const CollapsibleFloatPanel = memo<CollapsibleFloatPanelProps>(({ items }) => {
               ))}
             </Flexbox>
           </Flexbox>
-        </Rnd>
+        </RndComponent>
       )}
     </>
   );

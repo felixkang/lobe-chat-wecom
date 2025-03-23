@@ -27,6 +27,9 @@ const nextConfig: NextConfig = {
     ],
     webVitalsAttribution: ['CLS', 'LCP'],
     webpackMemoryOptimizations: true,
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
   },
   async headers() {
     return [
@@ -114,7 +117,6 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: buildWithDocker
     ? { '*': ['public/**/*', '.next/static/**/*'] }
     : undefined,
-  reactStrictMode: true,
   redirects: async () => [
     {
       destination: '/sitemap-index.xml',

@@ -36,10 +36,39 @@ declare global {
       AUTHENTIK_CLIENT_SECRET?: string;
       AUTHENTIK_ISSUER?: string;
 
+      // AUTHELIA
+      AUTHELIA_CLIENT_ID?: string;
+      AUTHELIA_CLIENT_SECRET?: string;
+      AUTHELIA_ISSUER?: string;
+
+      // Cloudflare Zero Trust
+      CLOUDFLARE_ZERO_TRUST_CLIENT_ID?: string;
+      CLOUDFLARE_ZERO_TRUST_CLIENT_SECRET?: string;
+      CLOUDFLARE_ZERO_TRUST_ISSUER?: string;
+
+      // Generic OIDC
+      GENERIC_OIDC_CLIENT_ID?: string;
+      GENERIC_OIDC_CLIENT_SECRET?: string;
+      GENERIC_OIDC_ISSUER?: string;
+
+      // LOGTO
+      LOGTO_CLIENT_ID?: string;
+      LOGTO_CLIENT_SECRET?: string;
+      LOGTO_ISSUER?: string;
+      LOGTO_WEBHOOK_SIGNING_KEY?: string;
+
       // ZITADEL
       ZITADEL_CLIENT_ID?: string;
       ZITADEL_CLIENT_SECRET?: string;
       ZITADEL_ISSUER?: string;
+
+      // WeChat Work
+      WECHAT_WORK_AGENT_ID?: string;
+      WECHAT_WORK_CORP_ID?: string;
+      WECHAT_WORK_SECRET?: string;
+
+      // Casdoor
+      CASDOOR_WEBHOOK_SECRET?: string;
     }
   }
 }
@@ -194,16 +223,21 @@ export const getAuthConfig = () => {
       GENERIC_OIDC_CLIENT_SECRET: z.string().optional(),
       GENERIC_OIDC_ISSUER: z.string().optional(),
 
-      // ZITADEL
-      ZITADEL_CLIENT_ID: z.string().optional(),
-      ZITADEL_CLIENT_SECRET: z.string().optional(),
-      ZITADEL_ISSUER: z.string().optional(),
-
       // LOGTO
       LOGTO_CLIENT_ID: z.string().optional(),
       LOGTO_CLIENT_SECRET: z.string().optional(),
       LOGTO_ISSUER: z.string().optional(),
       LOGTO_WEBHOOK_SIGNING_KEY: z.string().optional(),
+
+      // ZITADEL
+      ZITADEL_CLIENT_ID: z.string().optional(),
+      ZITADEL_CLIENT_SECRET: z.string().optional(),
+      ZITADEL_ISSUER: z.string().optional(),
+
+      // WeChat Work
+      WECHAT_WORK_AGENT_ID: z.string().optional(),
+      WECHAT_WORK_CORP_ID: z.string().optional(),
+      WECHAT_WORK_SECRET: z.string().optional(),
 
       // Casdoor
       CASDOOR_WEBHOOK_SECRET: z.string().optional(),
@@ -267,10 +301,24 @@ export const getAuthConfig = () => {
       LOGTO_ISSUER: process.env.LOGTO_ISSUER,
       LOGTO_WEBHOOK_SIGNING_KEY: process.env.LOGTO_WEBHOOK_SIGNING_KEY,
 
+      // WeChat Work
+      WECHAT_WORK_AGENT_ID: process.env.WECHAT_WORK_AGENT_ID,
+      WECHAT_WORK_CORP_ID: process.env.WECHAT_WORK_CORP_ID,
+      WECHAT_WORK_SECRET: process.env.WECHAT_WORK_SECRET,
+
       // Casdoor
       CASDOOR_WEBHOOK_SECRET: process.env.CASDOOR_WEBHOOK_SECRET,
     },
   });
 };
 
-export const authEnv = getAuthConfig();
+export const authEnv = {
+  ...getAuthConfig(),
+  NEXT_AUTH_DEBUG: process.env.NEXT_AUTH_DEBUG === 'true',
+  NEXT_AUTH_SECRET: process.env.NEXT_AUTH_SECRET || 'NEXT_AUTH_SECRET',
+  NEXT_AUTH_SSO_PROVIDERS: process.env.NEXT_AUTH_SSO_PROVIDERS || '',
+  NEXT_PUBLIC_ENABLE_NEXT_AUTH: process.env.NEXT_PUBLIC_ENABLE_NEXT_AUTH === 'true',
+  WECHAT_WORK_AGENT_ID: process.env.WECHAT_WORK_AGENT_ID || '',
+  WECHAT_WORK_CORP_ID: process.env.WECHAT_WORK_CORP_ID || '',
+  WECHAT_WORK_SECRET: process.env.WECHAT_WORK_SECRET || '',
+};

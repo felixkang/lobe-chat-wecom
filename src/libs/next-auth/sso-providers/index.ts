@@ -9,6 +9,7 @@ import Github from './github';
 import Logto from './logto';
 import MicrosoftEntraID from './microsoft-entra-id';
 import WeChat from './wechat';
+import WeChatWork from './wechat-work';
 import Zitadel from './zitadel';
 
 export const ssoProviders = [
@@ -24,4 +25,5 @@ export const ssoProviders = [
   Casdoor,
   MicrosoftEntraID,
   WeChat,
+  WeChatWork,
 ];
